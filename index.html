@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>XOS 16 Launcher</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --xos-accent: #00e676;
+            --xos-glass: rgba(22, 26, 35, 0.62);
+            --xos-border: rgba(255, 255, 255, 0.14);
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 45%, #064e3b 100%);
+            background-size: cover;
+            background-position: center;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 10;
+        }
+
+        .status-icons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* XOS 16 Widget Area */
+        .xos-widget-area {
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .clock-box h1 {
+            font-size: 56px;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -2px;
+            background: linear-gradient(to bottom, #ffffff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .clock-box .accent-dot {
+            color: var(--xos-accent);
+            -webkit-text-fill-color: var(--xos-accent);
+        }
+
+        .clock-box p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        .xos-pill-widget {
+            background: var(--xos-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--xos-border);
+            border-radius: 22px;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 115px;
+        }
+
+        .pill-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .pill-row i {
+            color: var(--xos-accent);
+        }
+
+        /* Search Bar */
+        .search-container {
+            padding: 0 22px;
+            margin-bottom: 8px;
+        }
+
+        .xos-search {
+            background: var(--xos-glass);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--xos-border);
+            border-radius: 50px;
+            padding: 11px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .xos-search input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .xos-search input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Home App Grid */
+        .app-grid {
+            flex: 1;
+            padding: 12px 22px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-auto-rows: min-content;
+            gap: 18px 14px;
+            overflow-y: auto;
+        }
+
+        .app-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+            position: relative;
+        }
+
+        .app-item:active {
+            transform: scale(0.9);
+        }
+
+        .app-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: white;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .app-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .app-name {
+            font-size: 11.5px;
+            font-weight: 500;
+            text-align: center;
+            max-width: 72px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+        }
+
+        /* Edit Mode Badge */
+        .edit-mode .app-item::after {
+            content: "\f304";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            top: -5px;
+            right: 4px;
+            background: var(--xos-accent);
+            color: #000;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-size: 11px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            animation: pulse 1.2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.12); }
+            100% { transform: scale(1); }
+        }
+
+        /* Swipe Up Hint Pill */
+        .drawer-trigger {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 0;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 11px;
+            gap: 2px;
+        }
+
+        .drawer-trigger i {
+            color: var(--xos-accent);
+            animation: bounceUp 1.8s infinite;
+        }
+
+        @keyframes bounceUp {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        /* Bottom Dock */
+        .dock-wrapper {
+            padding: 6px 18px 20px 18px;
+        }
+
+        .xos-dock {
+            background: var(--xos-glass);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border: 1px solid var(--xos-border);
+            border-radius: 28px;
+            padding: 12px 16px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        /* XOS 16 Full Screen App Drawer */
+        .app-drawer {
+            position: fixed;
+            inset: 0;
+            background: rgba(11, 15, 25, 0.92);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            z-index: 60;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+            padding: 16px 20px 24px 20px;
+        }
+
+        .app-drawer.open {
+            transform: translateY(0);
+        }
+
+        .drawer-header {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .drawer-handle {
+            width: 42px;
+            height: 5px;
+            background: rgba(255,255,255,0.25);
+            border-radius: 10px;
+            margin: 0 auto;
+            cursor: pointer;
+        }
+
+        .drawer-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drawer-top-bar h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--xos-accent);
+        }
+
+        .add-app-btn {
+            background: rgba(0, 230, 118, 0.16);
+            color: var(--xos-accent);
+            border: 1px solid var(--xos-accent);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .drawer-search {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid var(--xos-border);
+            border-radius: 16px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .drawer-search input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .drawer-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-auto-rows: min-content;
+            gap: 20px 14px;
+            overflow-y: auto;
+            padding-top: 8px;
+        }
+
+        /* Floating Theme Button */
+        .xos-fab {
+            position: fixed;
+            right: 0;
+            top: 44%;
+            background: var(--xos-glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--xos-border);
+            border-right: none;
+            padding: 12px 10px;
+            border-radius: 16px 0 0 16px;
+            color: var(--xos-accent);
+            cursor: pointer;
+            z-index: 50;
+            box-shadow: -4px 4px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.78);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .modal-card {
+            background: #161b26;
+            border: 1px solid var(--xos-border);
+            border-radius: 26px;
+            width: 100%;
+            max-width: 360px;
+            padding: 22px;
+            color: white;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-card h3 {
+            font-size: 17px;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--xos-border);
+            background: #0f131c;
+            color: white;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .file-upload-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: rgba(0, 230, 118, 0.15);
+            border: 1px dashed var(--xos-accent);
+            color: var(--xos-accent);
+            text-align: center;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .preset-icons {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+
+        .preset-icon-opt {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: #232a3b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 11px;
+            border-radius: 14px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-save { background: var(--xos-accent); color: #000; }
+        .btn-cancel { background: #283042; color: white; }
+
+        .toast {
+            position: fixed;
+            bottom: 105px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.88);
+            color: var(--xos-accent);
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: none;
+            z-index: 200;
+            border: 1px solid var(--xos-border);
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <span id="mini-time">12:00</span>
+        <div class="status-icons">
+            <i class="fa-solid fa-wifi"></i>
+            <i class="fa-solid fa-signal"></i>
+            <span id="battery-level">100% <i class="fa-solid fa-battery-full"></i></span>
+        </div>
+    </div>
+
+    <!-- XOS 16 Widget Area -->
+    <div class="xos-widget-area">
+        <div class="clock-box">
+            <h1 id="main-clock">12<span class="accent-dot">:</span>00</h1>
+            <p id="main-date">সোমবার, ২৩ নভেম্বর</p>
+        </div>
+        <div class="xos-pill-widget">
+            <div class="pill-row">
+                <i class="fa-solid fa-bolt"></i>
+                <span>XOS 16</span>
+            </div>
+            <div class="pill-row" onclick="toggleDrawer(true)">
+                <i class="fa-solid fa-grip"></i>
+                <span>All Apps</span>
+            </div>
+            <div class="pill-row" onclick="changeWallpaperPrompt()">
+                <i class="fa-solid fa-image"></i>
+                <span>Wallpaper</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+        <div class="xos-search">
+            <i class="fa-brands fa-google" style="color: var(--xos-accent);"></i>
+            <input type="text" id="google-search" placeholder="Search web..." onkeypress="handleSearch(event)">
+            <i class="fa-solid fa-wand-magic-sparkles" onclick="toggleEditMode()" style="color: var(--text-muted); cursor: pointer;"></i>
+        </div>
+    </div>
+
+    <!-- Home App Grid -->
+    <div class="app-grid" id="app-grid"></div>
+
+    <!-- Swipe Up Trigger for App Drawer -->
+    <div class="drawer-trigger" onclick="toggleDrawer(true)">
+        <i class="fa-solid fa-chevron-up"></i>
+        <span>Swipe up for App Drawer</span>
+    </div>
+
+    <!-- Floating Icon Customizer Trigger -->
+    <div class="xos-fab" onclick="toggleEditMode()">
+        <i class="fa-solid fa-palette"></i>
+    </div>
+
+    <!-- Bottom Dock -->
+    <div class="dock-wrapper">
+        <div class="xos-dock" id="dock-grid"></div>
+    </div>
+
+    <!-- Full-Screen App Drawer -->
+    <div class="app-drawer" id="app-drawer">
+        <div class="drawer-header">
+            <div class="drawer-handle" onclick="toggleDrawer(false)"></div>
+            <div class="drawer-top-bar">
+                <h2>XOS App Drawer</h2>
+                <div>
+                    <button class="add-app-btn" onclick="openNewAppModal()">+ নতুন অ্যাপ</button>
+                    <button class="add-app-btn" style="border-color:#64748b; color:#fff; background:transparent; margin-left:4px;" onclick="toggleDrawer(false)">✕</button>
+                </div>
+            </div>
+            <div class="drawer-search">
+                <i class="fa-solid fa-magnifying-glass" style="color: var(--xos-accent);"></i>
+                <input type="text" id="drawer-search-input" placeholder="অ্যাপ খুঁজুন (Search apps)..." oninput="filterDrawerApps()">
+            </div>
+        </div>
+        <div class="drawer-grid" id="drawer-grid"></div>
+    </div>
+
+    <!-- Icon Customizer / Add App Modal -->
+    <div class="modal-overlay" id="icon-modal">
+        <div class="modal-card">
+            <h3>
+                <span id="modal-title">আইকন কাস্টমাইজ করুন</span>
+                <i class="fa-solid fa-xmark" onclick="closeModal()" style="cursor:pointer; color:var(--text-muted);"></i>
+            </h3>
+            
+            <div class="form-group">
+                <label>অ্যাপের নাম</label>
+                <input type="text" id="edit-name" placeholder="যেমন: Free Fire">
+            </div>
+
+            <div class="form-group">
+                <label>অ্যাপ লিংক বা প্যাকেজ URL</label>
+                <input type="text" id="edit-url" placeholder="https://youtube.com">
+            </div>
+
+            <div class="form-group">
+                <label>গ্যালারি থেকে আইকন ছবি আপলোড করুন</label>
+                <label class="file-upload-btn">
+                    <i class="fa-solid fa-upload"></i> ছবি সিলেক্ট করুন (PNG/JPG)
+                    <input type="file" id="edit-image-file" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label>অথবা আইকন ইমেজ লিংক দিন</label>
+                <input type="text" id="edit-icon-url" placeholder="https://example.com/icon.png">
+            </div>
+
+            <div class="form-group">
+                <label>অথবা XOS প্রিসেট আইকন বেছে নিন</label>
+                <div class="preset-icons">
+                    <div class="preset-icon-opt" onclick="selectPreset('fa-brands fa-youtube', '#ff0000')"><i class="fa-brands fa-youtube"></i></div>
+                    <div class="preset-icon-opt" onclick="selectPreset('fa-brands fa-facebook-f', '#1877f2')"><i class="fa-brands fa-facebook-f"></i></div>
+                    <div class="preset-icon-opt" onclick="selectPreset('fa-brands fa-whatsapp', '#25d366')"><i class="fa-brands fa-whatsapp"></i></div>
+                    <div class="preset-icon-opt" onclick="selectPreset('fa-brands fa-instagram', '#e1306c')"><i class="fa-brands fa-instagram"></i></div>
+                    <div class="preset-icon-opt" onclick="selectPreset('fa-solid fa-gamepad', '#00e676')"><i class="fa-solid fa-gamepad"></i></div>
+                    <div class="preset-icon-opt" onclick="selectPreset('fa-solid fa-camera', '#f59e0b')"><i class="fa-solid fa-camera"></i></div>
+                    <div class="preset-icon-opt" onclick="selectPreset('fa-solid fa-music', '#8b5cf6')"><i class="fa-solid fa-music"></i></div>
+                    <div class="preset-icon-opt" onclick="selectPreset('fa-solid fa-globe', '#3b82f6')"><i class="fa-solid fa-globe"></i></div>
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn btn-cancel" onclick="closeModal()">বাতিল</button>
+                <button class="btn btn-save" onclick="saveAppChanges()">সেভ করুন</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const defaultApps = [
+            // Home Screen Apps
+            { id: 1, name: "YouTube", url: "https://m.youtube.com", iconClass: "fa-brands fa-youtube", bg: "linear-gradient(135deg, #ff0000, #b91c1c)", customImg: "", location: "home" },
+            { id: 2, name: "Facebook", url: "https://m.facebook.com", iconClass: "fa-brands fa-facebook-f", bg: "linear-gradient(135deg, #1877f2, #1d4ed8)", customImg: "", location: "home" },
+            { id: 3, name: "XTheme", url: "#", iconClass: "fa-solid fa-wand-magic-sparkles", bg: "linear-gradient(135deg, #00e676, #059669)", customImg: "", location: "home", action: "edit" },
+            { id: 4, name: "Game Space", url: "https://poki.com", iconClass: "fa-solid fa-gamepad", bg: "linear-gradient(135deg, #f97316, #ea580c)", customImg: "", location: "home" },
+            { id: 5, name: "Instagram", url: "https://instagram.com", iconClass: "fa-brands fa-instagram", bg: "linear-gradient(135deg, #f59e0b, #db2777, #7c3aed)", customImg: "", location: "home" },
+            { id: 6, name: "WhatsApp", url: "https://web.whatsapp.com", iconClass: "fa-brands fa-whatsapp", bg: "linear-gradient(135deg, #25d366, #15803d)", customImg: "", location: "home" },
+            { id: 7, name: "GitHub", url: "https://github.com", iconClass: "fa-brands fa-github", bg: "linear-gradient(135deg, #334155, #0f172a)", customImg: "", location: "home" },
+            { id: 8, name: "All Apps", url: "#", iconClass: "fa-solid fa-grip", bg: "linear-gradient(135deg, #00e676, #0284c7)", customImg: "", location: "home", action: "drawer" },
+
+            // Bottom Dock Apps
+            { id: 9, name: "Phone", url: "tel:", iconClass: "fa-solid fa-phone", bg: "linear-gradient(135deg, #00e676, #047857)", customImg: "", location: "dock" },
+            { id: 10, name: "Messages", url: "sms:", iconClass: "fa-solid fa-comment-dots", bg: "linear-gradient(135deg, #38bdf8, #0284c7)", customImg: "", location: "dock" },
+            { id: 11, name: "Chrome", url: "https://google.com", iconClass: "fa-brands fa-chrome", bg: "linear-gradient(135deg, #facc15, #ef4444)", customImg: "", location: "dock" },
+            { id: 12, name: "Camera", url: "#", iconClass: "fa-solid fa-camera", bg: "linear-gradient(135deg, #64748b, #1e293b)", customImg: "", location: "dock" },
+
+            // Extra Apps in App Drawer
+            { id: 13, name: "Telegram", url: "https://web.telegram.org", iconClass: "fa-brands fa-telegram", bg: "linear-gradient(135deg, #38bdf8, #0369a1)", customImg: "", location: "drawer" },
+            { id: 14, name: "TikTok", url: "https://tiktok.com", iconClass: "fa-brands fa-tiktok", bg: "linear-gradient(135deg, #0f172a, #e11d48)", customImg: "", location: "drawer" },
+            { id: 15, name: "Google Drive", url: "https://drive.google.com", iconClass: "fa-brands fa-google-drive", bg: "linear-gradient(135deg, #3b82f6, #10b981)", customImg: "", location: "drawer" },
+            { id: 16, name: "Spotify", url: "https://open.spotify.com", iconClass: "fa-brands fa-spotify", bg: "linear-gradient(135deg, #22c55e, #14532d)", customImg: "", location: "drawer" },
+            { id: 17, name: "Gmail", url: "https://mail.google.com", iconClass: "fa-solid fa-envelope", bg: "linear-gradient(135deg, #ef4444, #b91c1c)", customImg: "", location: "drawer" },
+            { id: 18, name: "Maps", url: "https://maps.google.com", iconClass: "fa-solid fa-location-dot", bg: "linear-gradient(135deg, #10b981, #3b82f6)", customImg: "", location: "drawer" },
+            { id: 19, name: "X (Twitter)", url: "https://x.com", iconClass: "fa-brands fa-x-twitter", bg: "linear-gradient(135deg, #1e293b, #000000)", customImg: "", location: "drawer" },
+            { id: 20, name: "Settings", url: "#", iconClass: "fa-solid fa-gear", bg: "linear-gradient(135deg, #475569, #1e293b)", customImg: "", location: "drawer", action: "edit" }
+        ];
+
+        let apps = JSON.parse(localStorage.getItem('xos16_v2_apps')) || defaultApps;
+        let isEditMode = false;
+        let currentEditingId = null;
+        let isCreatingNew = false;
+        let tempCustomImg = "";
+        let tempIconClass = "fa-solid fa-globe";
+        let tempBg = "linear-gradient(135deg, #00e676, #059669)";
+
+        const savedWallpaper = localStorage.getItem('xos16_wallpaper');
+        if (savedWallpaper) {
+            document.body.style.backgroundImage = `url('${savedWallpaper}')`;
+        }
+
+        function createAppElement(app) {
+            const appEl = document.createElement('div');
+            appEl.className = 'app-item';
+            appEl.onclick = () => handleAppClick(app);
+
+            const iconContent = app.customImg 
+                ? `<img src="${app.customImg}" alt="${app.name}">`
+                : `<i class="${app.iconClass}"></i>`;
+
+            const iconBg = app.customImg ? 'transparent' : app.bg;
+
+            appEl.innerHTML = `
+                <div class="app-icon" style="background: ${iconBg};">
+                    ${iconContent}
+                </div>
+                <span class="app-name">${app.name}</span>
+            `;
+            return appEl;
+        }
+
+        function renderApps(drawerFilter = "") {
+            const grid = document.getElementById('app-grid');
+            const dock = document.getElementById('dock-grid');
+            const drawerGrid = document.getElementById('drawer-grid');
+
+            grid.innerHTML = '';
+            dock.innerHTML = '';
+            drawerGrid.innerHTML = '';
+
+            // Sort alphabetically for App Drawer
+            const sortedApps = [...apps].sort((a, b) => a.name.localeCompare(b.name));
+
+            apps.forEach(app => {
+                if (app.location === 'home') grid.appendChild(createAppElement(app));
+                if (app.location === 'dock') dock.appendChild(createAppElement(app));
+            });
+
+            sortedApps.forEach(app => {
+                if (app.name.toLowerCase().includes(drawerFilter.toLowerCase())) {
+                    drawerGrid.appendChild(createAppElement(app));
+                }
+            });
+        }
+
+        function handleAppClick(app) {
+            if (isEditMode || app.action === 'edit') {
+                openEditModal(app);
+            } else if (app.action === 'drawer') {
+                toggleDrawer(true);
+            } else {
+                if (app.url && app.url !== '#') {
+                    window.location.href = app.url;
+                } else {
+                    showToast(`${app.name} ওপেন হচ্ছে...`);
+                }
+            }
+        }
+
+        // App Drawer Controls & Swipe Gesture
+        function toggleDrawer(open) {
+            const drawer = document.getElementById('app-drawer');
+            if (open) {
+                drawer.classList.add('open');
+            } else {
+                drawer.classList.remove('open');
+                document.getElementById('drawer-search-input').value = '';
+                renderApps();
+            }
+        }
+
+        function filterDrawerApps() {
+            const query = document.getElementById('drawer-search-input').value;
+            renderApps(query);
+        }
+
+        // Touch Swipe Up / Down Detection
+        let touchStartY = 0;
+        document.addEventListener('touchstart', e => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', e => {
+            const touchEndY = e.changedTouches[0].clientY;
+            const diffY = touchStartY - touchEndY;
+            const drawerOpen = document.getElementById('app-drawer').classList.contains('open');
+
+            if (diffY > 70 && !drawerOpen) {
+                toggleDrawer(true); // Swipe Up -> Open Drawer
+            } else if (diffY < -80 && drawerOpen && document.getElementById('drawer-grid').scrollTop === 0) {
+                toggleDrawer(false); // Swipe Down -> Close Drawer
+            }
+        }, { passive: true });
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            document.body.classList.toggle('edit-mode', isEditMode);
+            showToast(isEditMode ? "এডিট মোড চালু: অ্যাপে ট্যাপ করে আইকন বদলান" : "এডিট মোড বন্ধ হয়েছে");
+        }
+
+        function openEditModal(app) {
+            isCreatingNew = false;
+            currentEditingId = app.id;
+            tempCustomImg = app.customImg || "";
+            tempIconClass = app.iconClass;
+            tempBg = app.bg;
+
+            document.getElementById('modal-title').innerText = "আইকন কাস্টমাইজ করুন";
+            document.getElementById('edit-name').value = app.name;
+            document.getElementById('edit-url').value = app.url;
+            document.getElementById('edit-icon-url').value = app.customImg.startsWith('http') ? app.customImg : '';
+            document.getElementById('icon-modal').style.display = 'flex';
+        }
+
+        function openNewAppModal() {
+            isCreatingNew = true;
+            currentEditingId = Date.now();
+            tempCustomImg = "";
+            tempIconClass = "fa-solid fa-globe";
+            tempBg = "linear-gradient(135deg, #00e676, #059669)";
+
+            document.getElementById('modal-title').innerText = "নতুন অ্যাপ যোগ করুন";
+            document.getElementById('edit-name').value = "";
+            document.getElementById('edit-url').value = "https://";
+            document.getElementById('edit-icon-url').value = "";
+            document.getElementById('icon-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('icon-modal').style.display = 'none';
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 128;
+                    canvas.height = 128;
+                    ctx.drawImage(img, 0, 0, 128, 128);
+                    tempCustomImg = canvas.toDataURL('image/png');
+                    showToast("ছবি সিলেক্ট হয়েছে! এখন সেভ করুন");
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function selectPreset(iconClass, color) {
+            tempCustomImg = "";
+            tempIconClass = iconClass;
+            tempBg = color;
+            document.getElementById('edit-icon-url').value = "";
+            showToast("প্রিসেট আইকন সিলেক্ট হয়েছে");
+        }
+
+        function saveAppChanges() {
+            const nameVal = document.getElementById('edit-name').value.trim();
+            const urlVal = document.getElementById('edit-url').value.trim();
+            const iconUrlVal = document.getElementById('edit-icon-url').value.trim();
+
+            if (iconUrlVal) tempCustomImg = iconUrlVal;
+
+            if (isCreatingNew) {
+                apps.push({
+                    id: currentEditingId,
+                    name: nameVal || "New App",
+                    url: urlVal || "#",
+                    customImg: tempCustomImg,
+                    iconClass: tempIconClass,
+                    bg: tempBg,
+                    location: "drawer"
+                });
+            } else {
+                apps = apps.map(app => app.id === currentEditingId ? {
+                    ...app,
+                    name: nameVal || app.name,
+                    url: urlVal || app.url,
+                    customImg: tempCustomImg,
+                    iconClass: tempIconClass,
+                    bg: tempBg
+                } : app);
+            }
+
+            localStorage.setItem('xos16_v2_apps', JSON.stringify(apps));
+            renderApps();
+            closeModal();
+            showToast(isCreatingNew ? "নতুন অ্যাপ যোগ হয়েছে!" : "XOS আইকন আপডেট হয়েছে!");
+        }
+
+        function changeWallpaperPrompt() {
+            const url = prompt("নতুন ওয়ালপেপার ছবির লিংক (URL) দিন (রিসেট করতে ফাঁকা রেখে OK চাপুন):");
+            if (url === null) return;
+            if (url.trim() === "") {
+                localStorage.removeItem('xos16_wallpaper');
+                document.body.style.backgroundImage = "";
+                showToast("ডিফল্ট XOS ওয়ালপেপার সেট হয়েছে");
+            } else {
+                localStorage.setItem('xos16_wallpaper', url.trim());
+                document.body.style.backgroundImage = `url('${url.trim()}')`;
+                showToast("ওয়ালপেপার পরিবর্তিত হয়েছে!");
+            }
+        }
+
+        function handleSearch(e) {
+            if (e.key === 'Enter') {
+                const query = e.target.value.trim();
+                if (query) window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours() % 12 || 12;
+            let minutes = now.getMinutes();
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            document.getElementById('main-clock').innerHTML = `${hours}<span class="accent-dot">:</span>${minutes}`;
+            document.getElementById('mini-time').innerText = `${hours}:${minutes}`;
+            document.getElementById('main-date').innerText = now.toLocaleDateString('bn-BD', { weekday: 'long', day: 'numeric', month: 'long' });
+        }
+
+        if ('getBattery' in navigator) {
+            navigator.getBattery().then(battery => {
+                const updateBat = () => {
+                    document.getElementById('battery-level').innerHTML = `${Math.round(battery.level * 100)}% <i class="fa-solid fa-battery-three-quarters"></i>`;
+                };
+                updateBat();
+                battery.addEventListener('levelchange', updateBat);
+            });
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => { t.style.display = 'none'; }, 2500);
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+        renderApps();
+    </script>
+</body>
+</html>
